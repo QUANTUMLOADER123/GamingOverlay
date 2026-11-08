@@ -1,9 +1,11 @@
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 dist/
-release/
+build/
+*.spec
+*.exe
 .env
 *.local
+.DS_Store

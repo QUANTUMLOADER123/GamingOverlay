@@ -13,32 +13,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '22'
+          python-version: '3.11'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install PyInstaller
+        run: pip install pyinstaller
 
-      - name: Install NSIS (for .exe installer)
-        run: choco install nsis -y
+      - name: Build Windows .exe
+        run: pyinstaller --onefile --windowed --name GamingX gamingx_overlay.py
 
-      - name: Build Windows installer (capture output)
-        run: |
-          npx electron-builder --win 2>&1 | tee build-output.log
-          echo "=== EXIT CODE: ${PIPESTATUS[0]} ==="
-
-      - name: Show build output on failure
-        if: failure()
-        run: |
-          echo "=== BUILD OUTPUT LOG ==="
-          cat build-output.log
-          echo "=== END LOG ==="
+      - name: Rename artifact
+        run: ren dist\GamingX.exe GamingX_Overlay.exe
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: release/*
+          files: dist/GamingX_Overlay.exe
           generate_release_notes: true
