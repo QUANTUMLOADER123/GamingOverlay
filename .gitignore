@@ -5,6 +5,5 @@ yarn-error.log*
 .pnpm-debug.log*
 dist/
 release/
-build/
 .env
 *.local

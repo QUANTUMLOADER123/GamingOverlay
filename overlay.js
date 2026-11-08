@@ -14,14 +14,22 @@ const history = new Array(FPS_GRAPH.width).fill(0);
 let histIdx = 0;
 
 let cfg = {
-  modules: { fps: true, cpu: true, ram: true, gpu: true, battery: true, uptime: true, ping: false, crosshair: false },
-  fontSize: 16,
+  modules: {
+    fps: true, cpu: true, ram: true, gpu: true, battery: true, uptime: true,
+    ping: false, crosshair: false, net: false, disk: false,
+  },
+  fontSize: 13,
   opacity: 100,
   fpsAlertThreshold: 30,
   unlocked: false,
+  gpu: null,
+  net: { iface: '—', rx: 0, tx: 0 },
+  disk: { mount: '—', used: 0, size: 0, percent: 0 },
+  user: '—',
+  uptime: 0,
 };
 
-// ---------- FPS измерение ----------
+// ---------- FPS ----------
 
 function tick() {
   const now = performance.now();
@@ -38,18 +46,17 @@ function tick() {
   requestAnimationFrame(tick);
 }
 
-function pushHistory(v) {
-  history[histIdx++ % history.length] = v;
-}
+function pushHistory(v) { history[histIdx++ % history.length] = v; }
 
 function drawGraph() {
   CTX.clearRect(0, 0, FPS_GRAPH.width, FPS_GRAPH.height);
-  CTX.strokeStyle = 'var(--neon-cyan)';
-  CTX.lineWidth = 2;
+  CTX.strokeStyle = 'var(--green)';
+  CTX.lineWidth = 1;
   CTX.beginPath();
   const step = FPS_GRAPH.width / history.length;
   history.forEach((v, i) => {
-    const y = 40 - Math.min(v, 140) / 140 * 36;
+    const h = Math.min(v, 140);
+    const y = 24 - (h / 140) * 20;
     i === 0 ? CTX.moveTo(i * step, y) : CTX.lineTo(i * step, y);
   });
   CTX.stroke();
@@ -65,7 +72,10 @@ electronAPI.on('config:get-all', (c) => {
   cfg = { ...cfg, ...c, modules: { ...cfg.modules, ...(c.modules || {}) } };
   applyConfig(cfg);
   render();
+  if (c.gpu) cfg.gpu = c.gpu;
 });
+
+electronAPI.on('gpu-update', (gpu) => { cfg.gpu = gpu; render(); });
 
 function applyConfig(c) {
   document.documentElement.style.setProperty('--opacity', c.opacity / 100);
@@ -78,16 +88,18 @@ function applyConfig(c) {
   document.getElementById('fps-box').style.display = c.modules.fps !== false ? '' : 'none';
   FPS_GRAPH.style.display = c.modules.fps !== false ? '' : 'none';
   CROSSHAIR.style.display = c.modules.crosshair === true ? '' : 'none';
-  HINT.style.opacity = c.modules.fps !== false || c.modules.cpu !== false ? '1' : '0.35';
 }
 
-// ---------- системные метрики ----------
+// ---------- метрики ----------
 
-electronAPI.on('stats-update', (data) => {
-  renderMetrics(data);
+electronAPI.on('stats-update', (d) => {
+  cfg.net = d.net || cfg.net;
+  cfg.disk = d.disk || cfg.disk;
+  cfg.user = d.user || cfg.user;
+  cfg.uptime = d.uptime || cfg.uptime;
+  renderMetrics(d);
 });
 
-// пинг модуля
 let pingTimer = null;
 function startPing() {
   if (pingTimer) clearInterval(pingTimer);
@@ -96,37 +108,53 @@ function startPing() {
     try {
       const res = await electronAPI.invoke('ping:check', { host: cfg.pingHost || '1.1.1.1', port: Number(cfg.pingPort || 443) });
       const el = document.getElementById('metric-ping');
-      if (el) el.querySelector('.value').textContent = res.ok ? res.ms + ' мс' : '—';
+      if (el) el.querySelector('.value').textContent = res.ok ? res.ms + ' МС' : '—';
     } catch (e) { /* ignore */ }
   }, 3000);
 }
 function stopPing() { if (pingTimer) { clearInterval(pingTimer); pingTimer = null; } }
 
-function formatUptime(seconds) {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  return [h, m, s].map(v => v < 10 ? '0' + v : v).join(':');
+function formatUptime(s) {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  return [h, m, sec].map(v => v < 10 ? '0' + v : v).join(':');
 }
 
 function renderMetrics(d) {
   const rows = [];
   const mod = cfg.modules || {};
 
+  const now = new Date();
+  const timeStr = [now.getHours(), now.getMinutes(), now.getSeconds()].map(v => v < 10 ? '0' + v : v).join(':');
+
+  rows.push(`<div class="metric-row" id="metric-time"><span class="name">TIME</span><span class="value">${timeStr}</span></div>`);
+  if (mod.user !== false) {
+    rows.push(`<div class="metric-row" id="metric-user"><span class="name">USER</span><span class="value">${cfg.user}</span></div>`);
+  }
+  if (mod.fps !== false) {
+    rows.push(`<div class="metric-row" id="metric-fps"><span class="name">FPS</span><span class="value">${d.cpu !== undefined ? fps : '--'}</span></div>`);
+  }
   if (mod.cpu !== false) {
     rows.push(`<div class="metric-row" id="metric-cpu"><span class="name">CPU</span><span class="value">${d.cpu || 0}%</span></div>`);
   }
   if (mod.ram !== false) {
     rows.push(`<div class="metric-row" id="metric-ram"><span class="name">RAM</span><span class="value">${d.ram.used} / ${d.ram.total} МБ</span><span class="sub">${d.ram.percent}%</span></div>`);
   }
-  if (mod.gpu !== false && d.gpu) {
-    rows.push(`<div class="metric-row" id="metric-gpu"><span class="name">GPU</span><span class="value">${d.gpu.model || d.gpu.vendor || 'GPU'}</span></div>`);
+  if (mod.gpu !== false && cfg.gpu) {
+    rows.push(`<div class="metric-row" id="metric-gpu"><span class="name">GPU</span><span class="value">${cfg.gpu.model || cfg.gpu.vendor || 'GPU'}</span></div>`);
   }
   if (mod.battery !== false && d.battery) {
-    rows.push(`<div class="metric-row" id="metric-battery"><span class="name">BATTERY</span><span class="value">${d.battery.percent}% ${d.battery.isCharging ? '⚡' : ''}</span></div>`);
+    rows.push(`<div class="metric-row" id="metric-battery"><span class="name">BATT</span><span class="value">${d.battery.percent}% ${d.battery.isCharging ? '+' : ''}</span></div>`);
   }
   if (mod.uptime !== false) {
-    rows.push(`<div class="metric-row" id="metric-uptime"><span class="name">UPTIME</span><span class="value">${formatUptime(d.uptime || processUptime())}</span></div>`);
+    rows.push(`<div class="metric-row" id="metric-uptime"><span class="name">UPTIME</span><span class="value">${formatUptime(cfg.uptime)}</span></div>`);
+  }
+  if (mod.net !== false) {
+    rows.push(`<div class="metric-row" id="metric-net"><span class="name">NET ${cfg.net.iface}</span><span class="value">↓${cfg.net.rx} КБ/с ↑${cfg.net.tx} КБ/с</span></div>`);
+  }
+  if (mod.disk !== false) {
+    rows.push(`<div class="metric-row" id="metric-disk"><span class="name">DISK ${cfg.disk.mount}</span><span class="value">${cfg.disk.used} / ${cfg.disk.size} ГБ</span><span class="sub">${cfg.disk.percent}%</span></div>`);
   }
   if (mod.ping !== false) {
     rows.push(`<div class="metric-row" id="metric-ping"><span class="name">PING ${cfg.pingHost}</span><span class="value">—</span></div>`);
@@ -135,10 +163,5 @@ function renderMetrics(d) {
   startPing();
 }
 
-function processUptime() {
-  return 0;
-}
-
 // ---------- старт ----------
-
 tick();

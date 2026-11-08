@@ -1,13 +1,10 @@
 const { electronAPI } = window;
 
-// ---------- элементы ----------
-
 const $ = (id) => document.getElementById(id);
 const hotkeyDisplay = $('hotkeyDisplay');
 const btnRecordHotkey = $('btnRecordHotkey');
 const btnApplyHotkey = $('btnApplyHotkey');
 const btnToggleMenu = $('btnToggleMenu');
-const btnUnlock = $('btnUnlock');
 const clickThrough = $('clickThrough');
 
 const posBtns = document.querySelectorAll('.pos-btn');
@@ -24,6 +21,8 @@ const modRam = $('modRam');
 const modGpu = $('modGpu');
 const modBattery = $('modBattery');
 const modUptime = $('modUptime');
+const modNet = $('modNet');
+const modDisk = $('modDisk');
 const modPing = $('modPing');
 const modCrosshair = $('modCrosshair');
 
@@ -33,10 +32,24 @@ const fpsThreshold = $('fpsThreshold');
 const btnCheckPing = $('btnCheckPing');
 const pingResult = $('pingResult');
 
+// Оптимизация
 const btnGameBoost = $('btnGameBoost');
 const btnHighPerf = $('btnHighPerf');
 const btnCleanTemp = $('btnCleanTemp');
+const btnFlushDns = $('btnFlushDns');
+const btnResetWinsock = $('btnResetWinsock');
+const btnResetTcpIp = $('btnResetTcpIp');
+const btnPrefetch = $('btnPrefetch');
+const btnWinTemp = $('btnWinTemp');
+const btnWuCache = $('btnWuCache');
+const btnIconCache = $('btnIconCache');
+const btnGameMode = $('btnGameMode');
+const btnNetOpt = $('btnNetOpt');
+const btnSfc = $('btnSfc');
+const btnDism = $('btnDism');
 const killPid = $('killPid');
+const procPriority = $('procPriority');
+const btnSetPriority = $('btnSetPriority');
 const btnKillProc = $('btnKillProc');
 
 const logEl = $('log');
@@ -64,8 +77,8 @@ async function loadConfig() {
   posBtns.forEach((b) => b.classList.toggle('active', b.dataset.pos === activePos));
   opacity.value = cfg.opacity || 100;
   opacityVal.textContent = (cfg.opacity || 100) + '%';
-  fontSize.value = cfg.fontSize || 16;
-  fontSizeVal.textContent = (cfg.fontSize || 16) + 'px';
+  fontSize.value = cfg.fontSize || 13;
+  fontSizeVal.textContent = (cfg.fontSize || 13) + 'px';
 
   const m = cfg.modules || {};
   modFps.checked = m.fps !== false;
@@ -74,6 +87,8 @@ async function loadConfig() {
   modGpu.checked = m.gpu !== false;
   modBattery.checked = m.battery !== false;
   modUptime.checked = m.uptime !== false;
+  modNet.checked = m.net === true;
+  modDisk.checked = m.disk === true;
   modPing.checked = m.ping === true;
   modCrosshair.checked = m.crosshair === true;
 
@@ -88,7 +103,7 @@ loadConfig();
 
 btnRecordHotkey.addEventListener('click', () => {
   recordingHotkey = true;
-  btnRecordHotkey.textContent = 'Нажмите клавишу...';
+  btnRecordHotkey.textContent = 'НАЖМИТЕ КЛАВИШУ...';
   btnRecordHotkey.classList.add('primary');
   log('Запись горячей клавиши…');
 });
@@ -106,7 +121,7 @@ window.addEventListener('keydown', async (e) => {
   const hk = [...parts, key].join('+');
   hotkeyDisplay.textContent = hk;
   recordingHotkey = false;
-  btnRecordHotkey.textContent = 'Записать клавишу';
+  btnRecordHotkey.textContent = 'ЗАПИСАТЬ КЛАВИШУ';
   btnRecordHotkey.classList.remove('primary');
   log('Записано: ' + hk);
 });
@@ -115,7 +130,7 @@ btnApplyHotkey.addEventListener('click', async () => {
   const hk = hotkeyDisplay.textContent.trim();
   await electronAPI.invoke('config:set', 'hotkey', hk);
   await electronAPI.invoke('hotkey:register');
-  log('Горячая клавиша установлена: ' + hk);
+  log('Горячая клавиша: ' + hk);
 });
 
 // ---------- позиция ----------
@@ -131,7 +146,7 @@ posBtns.forEach((b) => {
   });
 });
 
-// ---------- внешний вид ----------
+// ---------- вид ----------
 
 opacity.addEventListener('input', () => { opacityVal.textContent = opacity.value + '%'; });
 opacity.addEventListener('change', async () => {
@@ -147,8 +162,8 @@ fontSize.addEventListener('change', async () => {
 
 // ---------- модули ----------
 
-const moduleEls = [modFps, modCpu, modRam, modGpu, modBattery, modUptime, modPing, modCrosshair];
-const moduleKeys = ['fps', 'cpu', 'ram', 'gpu', 'battery', 'uptime', 'ping', 'crosshair'];
+const moduleEls = [modFps, modCpu, modRam, modGpu, modBattery, modUptime, modNet, modDisk, modPing, modCrosshair];
+const moduleKeys = ['fps', 'cpu', 'ram', 'gpu', 'battery', 'uptime', 'net', 'disk', 'ping', 'crosshair'];
 
 function bindModule(el, key) {
   el.addEventListener('change', async () => {
@@ -163,14 +178,17 @@ moduleEls.forEach((el, i) => bindModule(el, moduleKeys[i]));
 clickThrough.addEventListener('change', async () => {
   await electronAPI.invoke('config:set', 'clickThrough', clickThrough.checked === true);
   await electronAPI.invoke('overlay:reconfigure');
-  log('Клик сквозь оверлей: ' + (clickThrough.checked ? 'вкл' : 'выкл'));
+  log('Клик сквозь оверлей: ' + (clickThrough.checked ? 'ВКЛ' : 'ВЫКЛ'));
+});
+
+btnToggleMenu.addEventListener('click', async () => {
+  await electronAPI.invoke('menu:toggle');
 });
 
 btnUnlock.addEventListener('click', async () => {
-  const unlocked = true; // одноразовая разблокировка — после клика можно перетащить за заголовок
-  await electronAPI.invoke('config:set', 'unlocked', unlocked);
+  await electronAPI.invoke('config:set', 'unlocked', true);
   await electronAPI.invoke('overlay:reconfigure');
-  log('Оверлей разблокирован — потяните за заголовок, чтобы передвинуть. Повторный запуск заблокирует его.');
+  log('Оверлей разблокирован — потяните за заголовок.');
 });
 
 pingHost.addEventListener('change', async () => {
@@ -183,24 +201,20 @@ fpsThreshold.addEventListener('change', async () => {
   await electronAPI.invoke('config:set', 'fpsAlertThreshold', Number(fpsThreshold.value) || 30);
 });
 
-btnToggleMenu.addEventListener('click', async () => {
-  await electronAPI.invoke('menu:toggle');
-});
-
 // ---------- пинг ----------
 
 btnCheckPing.addEventListener('click', async () => {
-  pingResult.textContent = 'проверка…';
+  pingResult.textContent = 'ПРОВЕРКА…';
   try {
     const res = await electronAPI.invoke('ping:check', {
       host: pingHost.value.trim() || '1.1.1.1',
       port: Number(pingPort.value) || 443,
     });
-    pingResult.textContent = res.ok ? res.ms + ' мс' : 'недоступен';
-    pingResult.style.color = res.ok ? 'var(--neon-green)' : 'var(--neon-red)';
+    pingResult.textContent = res.ok ? res.ms + ' МС' : 'НЕДОСТУПЕН';
+    pingResult.style.color = res.ok ? 'var(--green)' : 'var(--red)';
     log('Пинг ' + res.host + ':' + res.port + ' = ' + (res.ok ? res.ms + ' мс' : 'таймаут'));
   } catch (e) {
-    pingResult.textContent = 'ошибка';
+    pingResult.textContent = 'ОШИБКА';
     log('Ошибка пинга: ' + e.message, 'err');
   }
 });
@@ -208,7 +222,9 @@ btnCheckPing.addEventListener('click', async () => {
 // ---------- оптимизация ----------
 
 async function runOpt(label, fn) {
-  btnGameBoost.disabled = btnHighPerf.disabled = btnCleanTemp.disabled = true;
+  [btnGameBoost, btnHighPerf, btnCleanTemp, btnFlushDns, btnResetWinsock, btnResetTcpIp,
+   btnPrefetch, btnWinTemp, btnWuCache, btnIconCache, btnGameMode, btnNetOpt, btnSfc, btnDism,
+   btnSetPriority, btnKillProc].forEach((b) => { b.disabled = true; });
   log(label + '…');
   try {
     const res = await fn();
@@ -220,13 +236,33 @@ async function runOpt(label, fn) {
   } catch (e) {
     log('Ошибка: ' + e.message, 'err');
   } finally {
-    btnGameBoost.disabled = btnHighPerf.disabled = btnCleanTemp.disabled = false;
+    [btnGameBoost, btnHighPerf, btnCleanTemp, btnFlushDns, btnResetWinsock, btnResetTcpIp,
+     btnPrefetch, btnWinTemp, btnWuCache, btnIconCache, btnGameMode, btnNetOpt, btnSfc, btnDism,
+     btnSetPriority, btnKillProc].forEach((b) => { b.disabled = false; });
   }
 }
 
-btnGameBoost.addEventListener('click', () => runOpt('Game Boost', electronAPI.invoke.bind(electronAPI, 'optimizer:game-boost')));
-btnHighPerf.addEventListener('click', () => runOpt('Схема питания', electronAPI.invoke.bind(electronAPI, 'optimizer:high-perf')));
-btnCleanTemp.addEventListener('click', () => runOpt('Очистка temp', electronAPI.invoke.bind(electronAPI, 'optimizer:clean-temp')));
+btnGameBoost.addEventListener('click', () => runOpt('GAME BOOST', electronAPI.invoke.bind(electronAPI, 'optimizer:game-boost')));
+btnHighPerf.addEventListener('click', () => runOpt('ПИТАНИЕ', electronAPI.invoke.bind(electronAPI, 'optimizer:high-perf')));
+btnCleanTemp.addEventListener('click', () => runOpt('TEMP', electronAPI.invoke.bind(electronAPI, 'optimizer:clean-temp')));
+btnFlushDns.addEventListener('click', () => runOpt('DNS', electronAPI.invoke.bind(electronAPI, 'optimizer:flush-dns')));
+btnResetWinsock.addEventListener('click', () => runOpt('WINSOCK', electronAPI.invoke.bind(electronAPI, 'optimizer:reset-winsock')));
+btnResetTcpIp.addEventListener('click', () => runOpt('TCP/IP', electronAPI.invoke.bind(electronAPI, 'optimizer:reset-tcpip')));
+btnPrefetch.addEventListener('click', () => runOpt('PREFETCH', electronAPI.invoke.bind(electronAPI, 'optimizer:clean-prefetch')));
+btnWinTemp.addEventListener('click', () => runOpt('WINDOWS TEMP', electronAPI.invoke.bind(electronAPI, 'optimizer:clean-windows-temp')));
+btnWuCache.addEventListener('click', () => runOpt('КЭШ ОБНОВЛЕНИЙ', electronAPI.invoke.bind(electronAPI, 'optimizer:clean-wu-cache')));
+btnIconCache.addEventListener('click', () => runOpt('КЭШ ИКОНОК', electronAPI.invoke.bind(electronAPI, 'optimizer:clear-icon-cache')));
+btnGameMode.addEventListener('click', () => runOpt('ИГРОВОЙ РЕЖИМ', electronAPI.invoke.bind(electronAPI, 'optimizer:game-mode')));
+btnNetOpt.addEventListener('click', () => runOpt('СЕТЬ', electronAPI.invoke.bind(electronAPI, 'optimizer:optimize-network')));
+btnSfc.addEventListener('click', () => runOpt('SFC /SCANNOW', electronAPI.invoke.bind(electronAPI, 'optimizer:run-sfc')));
+btnDism.addEventListener('click', () => runOpt('DISM', electronAPI.invoke.bind(electronAPI, 'optimizer:run-dism')));
+
+btnSetPriority.addEventListener('click', async () => {
+  const pid = killPid.value.trim();
+  if (!pid) { log('Укажите PID', 'err'); return; }
+  const res = await electronAPI.invoke('optimizer:set-process-priority', { pid, priority: procPriority.value });
+  log((res.ok ? '✔' : '✘') + ' ' + res.message, res.ok ? 'ok' : 'err');
+});
 
 btnKillProc.addEventListener('click', async () => {
   const pid = killPid.value.trim();
