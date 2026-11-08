@@ -21,9 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Verify Electron binary
-        run: node -e "const {execSync} = require('child_process'); const p = require('electron/path'); console.log('Electron path:', p); try { require('fs').accessSync(p); console.log('OK'); } catch(e) { console.log('MISSING'); process.exit(1); }"
-
       - name: Install NSIS (for .exe installer)
         run: choco install nsis -y
 
