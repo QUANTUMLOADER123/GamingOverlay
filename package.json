@@ -27,38 +27,11 @@
     "directories": {
       "output": "release"
     },
-    "files": [
-      "**/*",
-      "!node_modules/**/*.md",
-      "!node_modules/**/*.markdown",
-      "!**/.gitignore",
-      "!**/*.md",
-      "!release/"
-    ],
+    "files": ["**/*", "!node_modules/**/*.md", "!**/.gitignore", "!release/"],
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64", "ia32"]
-        },
-        {
-          "target": "portable",
-          "arch": ["x64", "ia32"]
-        }
-      ],
+      "target": "nsis",
+      "arch": ["x64"],
       "publisherName": "GamingX"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "GamingX Overlay",
-      "menuCategory": true
-    },
-    "portable": {
-      "executableName": "GamingX"
     }
   }
 }

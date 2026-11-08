@@ -21,20 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Electron binary
-        run: node node_modules/electron/install.js
-
       - name: Install NSIS (for .exe installer)
-        run: |
-          choco install nsis -y
-          refreshenv
+        run: choco install nsis -y
 
-      - name: Build Windows installer + portable
-        env:
-          DEBUG: "electron-builder"
-          ELECTRON_GET_USE_GLOBAL_CACHE: "true"
-        run: |
-          node_modules/.bin/electron-builder --win --verbose 2>&1 || (echo "=== BUILD ERROR ABOVE ==="; exit 1)
+      - name: Build Windows installer
+        run: npx electron-builder --win
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
