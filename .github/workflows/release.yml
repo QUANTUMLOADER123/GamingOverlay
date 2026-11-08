@@ -27,6 +27,12 @@ jobs:
       - name: Rename artifact
         run: ren dist\GamingX.exe GamingX_Overlay.exe
 
+      - name: Upload .exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GamingX_Overlay
+          path: dist/GamingX_Overlay.exe
+
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
