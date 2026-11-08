@@ -13,29 +13,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install PyInstaller
-        run: pip install pyinstaller
-
-      - name: Build Windows .exe
-        run: pyinstaller --onefile --windowed --name GamingX gamingx_overlay.py
-
-      - name: Rename artifact
-        run: ren dist\GamingX.exe GamingX_Overlay.exe
+      - name: Build GamingX.exe with MSVC (cl.exe)
+        shell: cmd
+        run: |
+          cl /nologo /O2 /W3 gamingx_overlay.cpp /link user32.lib gdi32.lib kernel32.lib shell32.lib advapi32.lib iphlpapi.lib ws2_32.lib /OUT:GamingX.exe
 
       - name: Upload .exe artifact
         uses: actions/upload-artifact@v4
         with:
           name: GamingX_Overlay
-          path: dist/GamingX_Overlay.exe
+          path: GamingX.exe
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/GamingX_Overlay.exe
+          files: GamingX.exe
           generate_release_notes: true
