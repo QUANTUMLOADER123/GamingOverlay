@@ -25,13 +25,16 @@ jobs:
         run: node node_modules/electron/install.js
 
       - name: Install NSIS (for .exe installer)
-        run: choco install nsis -y
+        run: |
+          choco install nsis -y
+          refreshenv
 
       - name: Build Windows installer + portable
         env:
           DEBUG: "electron-builder"
           ELECTRON_GET_USE_GLOBAL_CACHE: "true"
-        run: node_modules/.bin/electron-builder --win --verbose
+        run: |
+          node_modules/.bin/electron-builder --win --verbose 2>&1 || (echo "=== BUILD ERROR ABOVE ==="; exit 1)
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
