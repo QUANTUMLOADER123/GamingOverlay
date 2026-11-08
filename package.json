@@ -29,7 +29,8 @@
     },
     "files": [
       "**/*",
-      "!node_modules/{**/.,**/*.md,**/*.markdown}",
+      "!node_modules/**/*.md",
+      "!node_modules/**/*.markdown",
       "!**/.gitignore",
       "!**/*.md",
       "!release/"

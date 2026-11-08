@@ -19,13 +19,18 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install --frozen-lockfile
+
+      - name: Verify Electron binary
+        run: node -e "const p = require('electron/path'); console.log('Electron path:', p); require('fs').access(p, (e) => console.log(e ? 'MISSING' : 'OK'))"
 
       - name: Install NSIS (for .exe installer)
         run: choco install nsis -y
 
       - name: Build Windows installer + portable
-        run: npm run dist
+        env:
+          DEBUG: "electron-builder"
+        run: yarn dist --verbose
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
