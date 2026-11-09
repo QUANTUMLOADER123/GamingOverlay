@@ -24,14 +24,21 @@ jobs:
       - name: Install Electron binary
         run: node node_modules/electron/install.js
 
-      - name: Install NSIS (for .exe installer)
-        run: choco install nsis -y
-
-      - name: Build Windows installer
+      - name: Build Windows (dir, no NSIS)
         env:
           DEBUG: "electron-builder"
           ELECTRON_GET_USE_GLOBAL_CACHE: "true"
-        run: npx electron-builder --win
+        run: npx electron-builder --win --dir
+
+      - name: Zip the output
+        run: 7z a GamingX.win32.x64.zip release/win-unpacked/* || powershell -Command "Compress-Archive -Path release/win-unpacked/* -DestinationPath GamingX.win32.x64.zip"
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete v1.0.0 --yes 2>nul || true
+          gh release create v1.0.0 "GamingX.win32.x64.zip" --title "GamingX Overlay v1.0.0" --notes "GamingX Overlay v1.0.0 — portable сборка (распаковать и запустить GamingX.exe)"
 
       - name: Create or update GitHub Release
         env:
