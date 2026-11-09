@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GamingX Overlay — Меню</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">G<sup>X</sup> OVERLAY</div>
+    <div class="status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">ОВЕРЛЕЙ АКТИВЕН</span>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">V1.0.0 · DEBUG 2000</div>
+    </div>
+  </header>
+
+  <!-- Горячая клавиша -->
+  <section class="section">
+    <h2>Горячая клавиша меню</h2>
+    <div class="row">
+      <label>Открыть / закрыть меню</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="flex" id="hotkeyDisplay" style="background:#000000;border:1px solid var(--border);color:var(--cyan);padding:4px 8px;border-radius:0;font-variant-numeric:tabular-nums">Ctrl+Alt+X</div>
+        <button class="btn small" id="btnRecordHotkey">ЗАПИСАТЬ КЛАВИШУ</button>
+        <button class="btn small" id="btnApplyHotkey" style="margin-left:6px">ПРИМЕНИТЬ</button>
+      </div>
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn small" id="btnToggleMenu">СКРЫТЬ МЕНЮ</button>
+    </div>
+  </section>
+
+  <!-- Модули оверлея -->
+  <section class="section">
+    <h2>Модули оверлея</h2>
+    <div class="row toggle">
+      <input type="checkbox" id="modFps" checked>
+      <label for="modFps">FPS + график</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modCpu" checked>
+      <label for="modCpu">Загрузка процессора</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modRam" checked>
+      <label for="modRam">Оперативная память</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modGpu" checked>
+      <label for="modGpu">Видеокарта</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modBattery" checked>
+      <label for="modBattery">Батарея</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modUptime" checked>
+      <label for="modUptime">Время работы</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modNet">
+      <label for="modNet">Сетевой трафик</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modDisk">
+      <label for="modDisk">Диск (C:)</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modPing">
+      <label for="modPing">Пинг до сервера (TCP)</label>
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="modCrosshair">
+      <label for="modCrosshair">Прицел в центре экрана</label>
+    </div>
+  </section>
+
+  <!-- Положение и вид -->
+  <section class="section">
+    <h2>Положение и внешний вид</h2>
+    <div class="row">
+      <label>Позиция на экране</label>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;width:260px;">
+        <button class="btn small pos-btn" data-pos="top-left">ЛЕВЫЙ ВЕРХ</button>
+        <button class="btn small pos-btn active" data-pos="top-right">ПРАВЫЙ ВЕРХ</button>
+        <button class="btn small pos-btn" data-pos="bottom-left">ЛЕВЫЙ НИЗ</button>
+        <button class="btn small pos-btn" data-pos="bottom-right">ПРАВЫЙ НИЗ</button>
+      </div>
+    </div>
+    <div class="slider-row">
+      <label>Прозрачность</label>
+      <input type="range" id="opacity" min="30" max="100" value="100">
+      <span id="opacityVal">100%</span>
+    </div>
+    <div class="slider-row">
+      <label>Размер шрифта</label>
+      <input type="range" id="fontSize" min="10" max="24" value="13">
+      <span id="fontSizeVal">13 px</span>
+    </div>
+    <div class="row">
+      <label>Клик сквозь оверлей</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="clickThrough" checked>
+        <label for="clickThrough" style="width:auto">ВКЛ (оверлей не перехватывает мышь)</label>
+      </div>
+    </div>
+    <div class="row">
+      <label>Перемещение оверлея</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn small" id="btnUnlock">РАЗБЛОКИРОВАТЬ (ТЯНУТЬ ЗА ЗАГОЛОВОК)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Пинг -->
+  <section class="section">
+    <h2>Пинг до сервера</h2>
+    <div class="row">
+      <label>Хост</label>
+      <input type="text" id="pingHost" value="1.1.1.1" placeholder="1.1.1.1">
+    </div>
+    <div class="row">
+      <label>Порт</label>
+      <input type="text" id="pingPort" value="443" placeholder="443">
+    </div>
+    <div class="row">
+      <label>Порог тревоги FPS</label>
+      <input type="text" id="fpsThreshold" value="30" placeholder="30">
+    </div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn small" id="btnCheckPing">ПРОВЕРИТЬ ПИНГ</button>
+      <span id="pingResult" style="color:var(--cyan);font-variant-numeric:tabular-nums;margin-left:10px">—</span>
+    </div>
+  </section>
+
+  <!-- Оптимизация Windows -->
+  <section class="section">
+    <h2>Оптимизация системы (Windows)</h2>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn primary" id="btnGameBoost">🚀 GAME BOOST (ВСЁ СРАЗУ)</button>
+      <button class="btn" id="btnHighPerf">ПИТАНИЕ: МАКСИМУМ</button>
+      <button class="btn" id="btnCleanTemp">ОЧИСТКА TEMP</button>
+    </div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="btnFlushDns">СБРОС DNS</button>
+      <button class="btn" id="btnResetWinsock">СБРОС WINSOCK</button>
+      <button class="btn" id="btnResetTcpIp">СБРОС TCP/IP</button>
+    </div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="btnPrefetch">ОЧИСТКА PREFETCH</button>
+      <button class="btn" id="btnWinTemp">ОЧИСТКА C:\WINDOWS\TEMP</button>
+      <button class="btn" id="btnWuCache">ОЧИСТКА КЭША ОБНОВЛЕНИЙ</button>
+    </div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="btnIconCache">ОЧИСТКА КЭША ИКОНОК</button>
+      <button class="btn" id="btnGameMode">ИГРОВОЙ РЕЖИМ (OFF DVR)</button>
+      <button class="btn" id="btnNetOpt">ОПТИМИЗАЦИЯ СЕТИ</button>
+    </div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="btnSfc">SFC /SCANNOW</button>
+      <button class="btn" id="btnDism">DISM RESTORE</button>
+    </div>
+    <div class="row">
+      <label>Приоритет процесса (PID)</label>
+      <div style="display:flex;align-items:center;gap:8px; width:260px;">
+        <input type="text" id="killPid" placeholder="PID процесса">
+        <select id="procPriority" style="max-width:120px">
+          <option value="high">High</option>
+          <option value="above">Above Normal</option>
+          <option value="normal">Normal</option>
+          <option value="below">Below Normal</option>
+          <option value="idle">Idle</option>
+        </select>
+        <button class="btn small" id="btnSetPriority">ПРИОРИТЕТ</button>
+        <button class="btn danger small" id="btnKillProc" style="margin-left:6px">ЗАВЕРШИТЬ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Лог -->
+  <section class="section">
+    <h2>Лог операций</h2>
+    <div class="log" id="log">ГОТОВ К РАБОТЕ.</div>
+  </section>
+
+  <div class="footer">GAMINGX OVERLAY · ГОРЯЧАЯ КЛАВИША: CTRL+ALT+X · ОВЕРЛЕЙ ПОВЕРХ ВСЕХ ПРИЛОЖЕНИЙ</div>
+</div>
+<script src="renderer.js"></script>
+</body>
+</html>
