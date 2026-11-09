@@ -14,7 +14,11 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
+<<<<<<< HEAD
     <ProjectGuid>{E4C3D2B1-5A6F-4E2C-9B7D-3F1A8C6E4D2B}</ProjectGuid>
+=======
+    <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-1234567890EF}</ProjectGuid>
+>>>>>>> 9e0c4a0 (Fix VS project files: simplified .sln and .vcxproj, removed problematic manifest embed options)
     <RootNamespace>GamingX</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -31,7 +35,10 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
+<<<<<<< HEAD
     <WholeProgramOptimization>true</WholeProgramOptimization>
+=======
+>>>>>>> 9e0c4a0 (Fix VS project files: simplified .sln and .vcxproj, removed problematic manifest embed options)
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
 
@@ -75,7 +82,10 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>user32.lib;gdi32.lib;kernel32.lib;shell32.lib;advapi32.lib;iphlpapi.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+<<<<<<< HEAD
       <AdditionalOptions>/MANIFEST:EMBED /MANIFESTFILE:GamingX.manifest %(AdditionalOptions)</AdditionalOptions>
+=======
+>>>>>>> 9e0c4a0 (Fix VS project files: simplified .sln and .vcxproj, removed problematic manifest embed options)
     </Link>
   </ItemDefinitionGroup>
 
@@ -94,9 +104,13 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+<<<<<<< HEAD
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalDependencies>user32.lib;gdi32.lib;kernel32.lib;shell32.lib;advapi32.lib;iphlpapi.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/MANIFEST:EMBED /MANIFESTFILE:GamingX.manifest %(AdditionalOptions)</AdditionalOptions>
+=======
+      <AdditionalDependencies>user32.lib;gdi32.lib;kernel32.lib;shell32.lib;advapi32.lib;iphlpapi.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+>>>>>>> 9e0c4a0 (Fix VS project files: simplified .sln and .vcxproj, removed problematic manifest embed options)
     </Link>
   </ItemDefinitionGroup>
 
