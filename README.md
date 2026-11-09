@@ -1,29 +1,10 @@
-# GamingX Overlay — C++ / Win32
+# GamingX Overlay (Python / Win32)
 
 Гейминг-оверлей поверх **всех приложений** (включая игры и полноэкранные окна): счётчик FPS, системная информация, пинг, прицел, панель оптимизации Windows, системный трей. Горячая клавиша меню — **Ctrl+Alt+X**.
 
-## Сборка под Windows (Visual Studio)
+## Стиль
 
-Репозиторий содержит готовый проект Visual Studio:
-
-- `GamingX.sln` — решение
-- `GamingX.vcxproj` — проект C++ (x64, Release/Debug)
-- `GamingX.manifest` — манифест с **`requireAdministrator`** (UAC, запуск от имени администратора)
-
-### Как собрать `.exe`
-
-1. Установите **Visual Studio 2022** с компонентом **«Разработка классических приложений на C++»** (Desktop development with C++).
-2. Откройте `GamingX.sln`.
-3. В верхней панели выберите конфигурацию **Release** и платформу **x64**.
-4. Нажмите **Сборка → Построить решение** (или `Ctrl+Shift+B`).
-5. Готовый `GamingX.exe` появится в папке `x64\Release\`.
-
-### Вручную через командную строку (Developer Command Prompt for VS)
-
-```cmd
-cd GamingOverlay
-cl /nologo /O2 /W3 gamingx_overlay.cpp /link user32.lib gdi32.lib kernel32.lib shell32.lib advapi32.lib iphlpapi.lib ws2_32.lib /MANIFEST:EMBED /MANIFESTFILE:GamingX.manifest /OUT:GamingX.exe
-```
+Угловатый интерфейс в духе отладочных панелей 2000-х: без скруглений, неоново-зелёный текст на чёрном, шрифт Orbitron (Courier New как fallback).
 
 ## Возможности
 
@@ -42,21 +23,38 @@ cl /nologo /O2 /W3 gamingx_overlay.cpp /link user32.lib gdi32.lib kernel32.lib s
 - Оверлей висит в углу экрана поверх всех окон, клик сквозь него не мешает игре.
 - Системный трей: быстрый доступ к программе.
 
+## Запуск в разработке (Windows)
+
+```cmd
+python gamingx_overlay.py
+```
+
+## Сборка в .exe (Windows)
+
+На своей машине:
+
+```cmd
+pip install pyinstaller
+pyinstaller --onefile --windowed --name GamingX gamingx_overlay.py
+```
+
+Готовый `.exe` появится в папке `dist/GamingX.exe`.
+
+**Или пусть соберёт GitHub Actions:** workflow в `.github/workflows/release.yml` автоматически собирает Windows `.exe` при теге `v*` или ручном запуске и загружает его в GitHub Releases.
+
 ## Технологии
 
-- **C++17** + чистый **Win32 API** (без внешних GUI-библиотек)
+- **Python 3.11** + **ctypes** (чистый Win32 API, без внешних GUI-библиотек)
 - Окно: прозрачное, безрамочное, `alwaysOnTop`, клик сквозь, глобальные горячие клавиши
 - Системная информация: `GetSystemTimes`, `GlobalMemoryStatusEx`, `GetSystemPowerStatus`, `GetTickCount64`
-- Манифест: `requestedExecutionLevel level="requireAdministrator"` (требуются права администратора)
+- Трей: `Shell_NotifyIcon`
 
 ## Структура
 
 ```
-GamingX.sln           — решение Visual Studio
-GamingX.vcxproj       — проект C++ (x64)
-GamingX.manifest      — манифест с requireAdministrator
-gamingx_overlay.cpp   — основной код оверлея (Win32 API)
-GamingX               — собранный Linux-бинарник (только для проверки, не для Windows)
+gamingx_overlay.py   — основной код оверлея (Win32 API через ctypes)
+README.md            — эта инструкция
+.github/workflows/release.yml  — автоматическая сборка .exe через GitHub Actions
 ```
 
-> ⚠️ В этой песочнице нет Windows-компилятора (только Linux `g++`), поэтому `.exe` здесь собрать нельзя. Компилируйте на своей Windows через Visual Studio или MinGW.
+> ⚠️ Я не могу скомпилировать `.exe` из этой Linux-песочницы — там нет Windows-инструментов компиляции. `.exe` собирается либо на вашей Windows-машине (`pyinstaller`), либо через GitHub Actions (запустите workflow в разделе Actions репозитория).
