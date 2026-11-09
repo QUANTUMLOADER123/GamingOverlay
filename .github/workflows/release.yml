@@ -13,18 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install MinGW (g++ for Windows)
-        run: choco install mingw -y
-
-      - name: Build GamingX.exe with MinGW
+      - name: Build GamingX.exe with MSVC (cl.exe)
         shell: cmd
         run: |
-          refreshenv
-          g++ gamingx_overlay.cpp -o GamingX.exe -luser32 -lgdi32 -lkernel32 -lshell32 -ladvapi32 -lws2_32 -mwindows -O2
+          cl /nologo /O2 /W3 gamingx_overlay.cpp /link user32.lib gdi32.lib kernel32.lib shell32.lib advapi32.lib iphlpapi.lib ws2_32.lib /OUT:GamingX.exe
 
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete v1.0.0 --yes 2>nul || true
-          gh release create v1.0.0 "GamingX.exe" --title "GamingX Overlay v1.0.0" --notes "GamingX Overlay v1.0.0 — готовый .exe (собрано через MinGW на GitHub Actions)"
+          gh release create v1.0.0 "GamingX.exe" --title "GamingX Overlay v1.0.0" --notes "Готовый Windows .exe. Собрано через GitHub Actions (MSVC cl.exe). Запускай GamingX.exe — оверлей поверх всех окон, меню по Ctrl+Alt+X."
