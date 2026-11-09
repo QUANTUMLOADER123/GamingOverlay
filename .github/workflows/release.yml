@@ -19,7 +19,7 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps --no-audit --no-fund --timeout=120000
 
       - name: Install NSIS (for .exe installer)
         run: choco install nsis -y
