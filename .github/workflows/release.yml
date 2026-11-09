@@ -13,36 +13,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - name: Install MinGW (g++ for Windows)
+        run: choco install mingw -y
 
-      - name: Install dependencies (skip electron postinstall)
-        run: npm install --ignore-scripts --no-audit --no-fund --timeout=120000
-
-      - name: Install Electron binary
-        run: node node_modules/electron/install.js
-
-      - name: Build Windows (dir, no NSIS)
-        env:
-          DEBUG: "electron-builder"
-          ELECTRON_GET_USE_GLOBAL_CACHE: "true"
-        run: npx electron-builder --win --dir
-
-      - name: Zip the output
-        run: 7z a GamingX.win32.x64.zip release/win-unpacked/* || powershell -Command "Compress-Archive -Path release/win-unpacked/* -DestinationPath GamingX.win32.x64.zip"
+      - name: Build GamingX.exe with MinGW
+        shell: cmd
+        run: |
+          refreshenv
+          g++ gamingx_overlay.cpp -o GamingX.exe -luser32 -lgdi32 -lkernel32 -lshell32 -ladvapi32 -lws2_32 -mwindows -O2
 
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete v1.0.0 --yes 2>nul || true
-          gh release create v1.0.0 "GamingX.win32.x64.zip" --title "GamingX Overlay v1.0.0" --notes "GamingX Overlay v1.0.0 — portable сборка (распаковать и запустить GamingX.exe)"
-
-      - name: Create or update GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release delete v1.0.0 --yes 2>nul || true
-          gh release create v1.0.0 "release/GamingX Setup x64.exe" --title "GamingX Overlay v1.0.0" --notes "GamingX Overlay v1.0.0 — готовый .exe установщик"
+          gh release create v1.0.0 "GamingX.exe" --title "GamingX Overlay v1.0.0" --notes "GamingX Overlay v1.0.0 — готовый .exe (собрано через MinGW на GitHub Actions)"
