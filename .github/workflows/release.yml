@@ -21,12 +21,16 @@ jobs:
       - name: Install dependencies (skip electron postinstall)
         run: npm install --ignore-scripts --no-audit --no-fund --timeout=120000
 
+      - name: Install Electron binary
+        run: node node_modules/electron/install.js
+
       - name: Install NSIS (for .exe installer)
         run: choco install nsis -y
 
       - name: Build Windows installer
         env:
           DEBUG: "electron-builder"
+          ELECTRON_GET_USE_GLOBAL_CACHE: "true"
         run: npx electron-builder --win
 
       - name: Create or update GitHub Release
