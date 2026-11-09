@@ -1,0 +1,26 @@
+name: Build Windows Release (.exe)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build GamingX.exe with MSVC (cl.exe)
+        shell: cmd
+        run: |
+          cl /nologo /O2 /W3 gamingx_overlay.cpp /link user32.lib gdi32.lib kernel32.lib shell32.lib advapi32.lib iphlpapi.lib ws2_32.lib /OUT:GamingX.exe
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete v1.0.0 --yes 2>nul || true
+          gh release create v1.0.0 "GamingX.exe" --title "GamingX Overlay v1.0.0" --notes "Готовый Windows .exe. Собрано через GitHub Actions (MSVC cl.exe). Запускай GamingX.exe — оверлей поверх всех окон, меню по Ctrl+Alt+X."
